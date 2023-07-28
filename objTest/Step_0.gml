@@ -16,3 +16,6 @@ if(!flag && n >= 300) {
 		TimelineMomentAdd(tlTest, 60, "G", show_debug_message);
 	});
 }
+
+if(keyboard_check_pressed(vk_space))
+	show_debug_message(tlTest);
