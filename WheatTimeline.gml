@@ -4,6 +4,7 @@ function TimelineCreate() {
 	return {
 		time : -1, // 当前推进到了哪一时间点
 		moment : -1, // 当前推进到了哪一时刻，对应下方数组的下标
+		size : 0, // 下面的数组的长度
 		arrTime : [], // 存储时间点的数组
 		arrArgs : [], // 存储函数所需参数的数组
 		arrFunc : [], // 存储函数的数组
@@ -19,7 +20,7 @@ function TimelineCreate() {
  * @param {bool} _stepIsRelative 前面的_step为 绝对 还是 根据最后一个时刻的时间点相对，false(默认) = 绝对，true = 相对
  */
 function TimelineMomentAdd(_timeline, _step, _args, _func, _stepIsRelative = false) {
-	var _len = array_length(_timeline.arrTime);
+	var _len = _timeline.size;
 	if(_len <= 0) {
 		if(_step < 0) {
 			_step = 0;
@@ -32,6 +33,7 @@ function TimelineMomentAdd(_timeline, _step, _args, _func, _stepIsRelative = fal
 		array_push(_timeline.arrTime, _step);
 		array_push(_timeline.arrArgs, _args);
 		array_push(_timeline.arrFunc, _func);
+		_timeline.size++;
 		
 		return;
 	}
@@ -53,6 +55,7 @@ function TimelineMomentAdd(_timeline, _step, _args, _func, _stepIsRelative = fal
 		array_push(_timeline.arrTime, _step);
 		array_push(_timeline.arrArgs, _args);
 		array_push(_timeline.arrFunc, _func);
+		_timeline.size++;
 		
 		return;
 	}
@@ -80,6 +83,7 @@ function TimelineMomentAdd(_timeline, _step, _args, _func, _stepIsRelative = fal
 	array_insert(_timeline.arrTime, _findL, _step);
 	array_insert(_timeline.arrArgs, _findL, _args);
 	array_insert(_timeline.arrFunc, _findL, _func);
+	_timeline.size++;
 	
 	if(_findL <= _timeline.moment) {
 		_timeline.moment++;
@@ -92,7 +96,7 @@ function TimelineMomentAdd(_timeline, _step, _args, _func, _stepIsRelative = fal
  * @param {real} _step 时间点
  */
 function TimelineMomentClear(_timeline, _step) {
-	var _len = array_length(_timeline.arrTime);
+	var _len = _timeline.size;
 	if(_len <= 0) {
 		return;
 	}
@@ -129,6 +133,7 @@ function TimelineMomentClear(_timeline, _step) {
 			array_delete(_timeline.arrTime, _findL, _findR - _findL);
 			array_delete(_timeline.arrArgs, _findL, _findR - _findL);
 			array_delete(_timeline.arrFunc, _findL, _findR - _findL);
+			_timeline.size -= _findR - _findL;
 			
 			if(_findR <= _timeline.moment) {
 				_timeline.moment -= _findR - _findL;
@@ -145,6 +150,9 @@ function TimelineMomentClear(_timeline, _step) {
  * @param {struct} _timeline 时间线
  */
 function TimelineMomentClearAll(_timeline) {
+	_timeline.time = -1;
+	_timeline.moment = -1;
+	_timeline.size = 0;
 	array_resize(_timeline.arrTime, 0);
 	array_resize(_timeline.arrArgs, 0);
 	array_resize(_timeline.arrFunc, 0);
@@ -177,6 +185,7 @@ function TimelineSize(_timeline) {
  */
 function TimelineRun(_timeline, _speed = 1, _loop = false) {
 	var _len = array_length(_timeline.arrTime);
+	
 	if(_len <= 0) {
 		return;
 	}
@@ -190,7 +199,6 @@ function TimelineRun(_timeline, _speed = 1, _loop = false) {
 		_timeline.moment = 0;
 	}
 	
-	if(_timeline.moment < _len)
 	while(_timeline.moment + 1 < _len && _timeline.time >= _timeline.arrTime[_timeline.moment + 1]) {
 		_timeline.moment++;
 		
@@ -202,5 +210,6 @@ function TimelineRun(_timeline, _speed = 1, _loop = false) {
 		var func = _timeline.arrFunc[_timeline.moment];
 		func(_timeline.arrArgs[_timeline.moment]);
 		
+		_len = _timeline.size; // 防止上面那句执行的函数里有影响到时间线的部分
 	}
 }
